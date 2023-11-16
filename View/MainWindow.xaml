@@ -3,41 +3,61 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:TaskManager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid Margin="10">
+        Title="MainWindow" Height="500" Width="800">
+
+    <Grid x:Name="grid" Margin="10,10,10,57">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Форма для добавления новой задачи -->
         <StackPanel Grid.Row="0" Margin="5">
-            <TextBox  Text="{Binding NewTask.Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5" />
-            <TextBox  Text="{Binding NewTask.Description, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                <DatePicker  SelectedDate="{Binding NewTask.StartDate, UpdateSourceTrigger=PropertyChanged}" Width="248" />
-                <DatePicker  SelectedDate="{Binding NewTask.EndDate, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" Width="248"/>
-                <DatePicker  SelectedDate="{Binding NewTask.Deadline, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" Width="248"/>
+            <xctk:WatermarkTextBox Watermark="Введите заголовок" Text="{Binding NewTask.Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5" />
+            <xctk:WatermarkTextBox Watermark="Введите описание" Text="{Binding NewTask.Description, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,5" >
+                <DatePicker  SelectedDate="{Binding NewTask.StartDate, UpdateSourceTrigger=PropertyChanged}" />
+                <DatePicker  SelectedDate="{Binding NewTask.Deadline, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0"/>
             </StackPanel>
-            <TextBox  Text="{Binding NewTask.AssignedTo, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,5"/>
+            <xctk:WatermarkComboBox Watermark="Назначить исполнителя" ItemsSource="{Binding Employer, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="FullEmployers" SelectedItem="{Binding SelectedEmployers}" Margin="0,0,0,5"/>
             <Button Content="Add Task" Command="{Binding AddTaskCommand}" />
         </StackPanel>
 
-        <!-- Список задач -->
-        <ListView Grid.Row="1" ItemsSource="{Binding Tasks}" Margin="5">
+        <ListView Grid.Row="1" ItemsSource="{Binding Tasks}" SelectedItem="{Binding SelectedTask}" Margin="5,5,5,-22" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Заголовок" DisplayMemberBinding="{Binding Title}" />
                     <GridViewColumn Header="Описание" DisplayMemberBinding="{Binding Description}" />
-                    <GridViewColumn Header="Дата начала" DisplayMemberBinding="{Binding StartDate}" />
-                    <GridViewColumn Header="Дата окончания" DisplayMemberBinding="{Binding EndDate}" />
-                    <GridViewColumn Header="Крайний срок" DisplayMemberBinding="{Binding Deadline}" />
+                    <GridViewColumn Header="Дата начала" DisplayMemberBinding="{Binding StartDate, StringFormat=\{0:dd.MM.yyyy\}}" />
+                    <GridViewColumn Header="Дата окончания" DisplayMemberBinding="{Binding EndDate, StringFormat=\{0:dd.MM.yyyy\}}" />
+                    <GridViewColumn Header="Крайний срок" DisplayMemberBinding="{Binding Deadline, StringFormat=\{0:dd.MM.yyyy\}}" />
                     <GridViewColumn Header="Исполнитель" DisplayMemberBinding="{Binding AssignedTo}" />
                     <GridViewColumn Header="Статус" DisplayMemberBinding="{Binding Status}" />
                 </GridView>
             </ListView.View>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Status}" Value="в работе">
+                            <Setter Property="Background" Value="YellowGreen"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="завершено">
+                            <Setter Property="Background" Value="Gray"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="неактивный">
+                            <Setter Property="Background" Value="LightPink"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="просрочено">
+                            <Setter Property="Background" Value="Red"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
         </ListView>
+        <Button Content="Закончить выполнение задачи" Command="{Binding ShowMessageBoxCommand}" Margin="390,275,5,-58" Grid.Row="1" />
+        <Button Content="Начать выполнение задачи" Command="{Binding TaskCommand}" Margin="5,275,390,-58" Grid.Row="1" />
     </Grid>
 </Window>
